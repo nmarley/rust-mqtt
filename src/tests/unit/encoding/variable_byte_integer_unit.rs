@@ -23,7 +23,7 @@ fn test_decode_small() {
 
 #[test]
 fn test_encode() {
-    let encoded = VariableByteIntegerEncoder::encode(211_366_5);
+    let encoded = VariableByteIntegerEncoder::encode(2_113_665);
     assert!(encoded.is_ok());
     let res = encoded.unwrap();
     assert_eq!(res, [0x81, 0x81, 0x81, 0x01]);

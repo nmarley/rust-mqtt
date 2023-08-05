@@ -17,7 +17,7 @@ fn test_decode() {
     assert_eq!(packet.remain_len, 20);
     assert_eq!(packet.packet_identifier, 52232);
     assert_eq!(packet.property_len, 15);
-    let prop = packet.properties.get(0);
+    let prop = packet.properties.first();
     assert!(prop.is_some());
     assert_eq!(<&Property as Into<u8>>::into(prop.unwrap()), 0x1F);
     if let Property::ReasonString(u) = (*prop.unwrap()).clone() {
@@ -25,7 +25,7 @@ fn test_decode() {
         assert_eq!(u.string, "reasonString");
     }
     assert_eq!(packet.reason_codes.len(), 2);
-    let res1 = packet.reason_codes.get(0);
+    let res1 = packet.reason_codes.first();
     assert!(res1.is_some());
     if let Some(r) = res1 {
         assert_eq!(*r, 0x77);

@@ -25,7 +25,7 @@ fn test_decode() {
         assert_eq!(u.string, "reasonString");
     }
     assert_eq!(packet.reason_codes.len(), 3);
-    let res1 = packet.reason_codes.get(0);
+    let res1 = packet.reason_codes.first();
     assert!(res1.is_some());
     if let Some(r) = res1 {
         assert_eq!(*r, 0x12);
