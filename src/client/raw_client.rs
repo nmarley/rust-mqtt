@@ -1,3 +1,4 @@
+use embedded_io::blocking::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 
@@ -111,7 +112,7 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the connection to the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn connect_to_broker(&mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
             MqttVersion::MQTTv5 => self.connect_to_broker_v5(),
@@ -145,7 +146,7 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the disconnect from the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn disconnect(&mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
             MqttVersion::MQTTv5 => self.disconnect_v5(),
@@ -279,7 +280,7 @@ where
         Ok(identifier)
     }
 
-    fn send_ping_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    fn send_ping_v5(&mut self) -> Result<(), ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -302,7 +303,7 @@ where
     /// Method allows client send PING message to the broker specified in the `ClientConfig`.
     /// If there is expectation for long running connection. Method should be executed
     /// regularly by the timer that counts down the session expiry interval.
-    pub fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn send_ping(&mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
             MqttVersion::MQTTv5 => self.send_ping_v5(),
@@ -469,11 +470,11 @@ where
 }
 
 #[cfg(not(feature = "tls"))]
-fn receive_packet<'c, T: Read + Write>(
+fn receive_packet<T: Read + Write>(
     buffer: &mut [u8],
     buffer_len: usize,
     recv_buffer: &mut [u8],
-    conn: &'c mut NetworkConnection<T>,
+    conn: &mut NetworkConnection<T>,
 ) -> Result<usize, ReasonCode> {
     use crate::utils::buffer_writer::RemLenError;
 

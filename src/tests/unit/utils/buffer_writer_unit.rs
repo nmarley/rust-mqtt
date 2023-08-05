@@ -1,5 +1,4 @@
 use heapless::Vec;
-use tokio_test::{assert_err, assert_ok};
 
 use crate::encoding::variable_byte_integer::VariableByteInteger;
 use crate::packet::v5::property::Property;
@@ -368,8 +367,8 @@ fn buffer_get_rem_len_one() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 5);
     let test_write = writer.insert_ref(5, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -382,8 +381,8 @@ fn buffer_get_rem_len_two() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 5);
     let test_write = writer.insert_ref(5, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -396,8 +395,8 @@ fn buffer_get_rem_len_three() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 5);
     let test_write = writer.insert_ref(5, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -410,8 +409,8 @@ fn buffer_get_rem_len_all() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 5);
     let test_write = writer.insert_ref(5, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -424,8 +423,8 @@ fn buffer_get_rem_len_over() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 6);
     let test_write = writer.insert_ref(6, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -438,8 +437,8 @@ fn buffer_get_rem_len_zero_end() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 6);
     let test_write = writer.insert_ref(6, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -452,8 +451,8 @@ fn buffer_get_rem_len_zero() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 6);
     let test_write = writer.insert_ref(6, &BUFFER);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_ok!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_ok());
     assert_eq!(rm_len.unwrap(), REF);
 }
 
@@ -466,10 +465,10 @@ fn buffer_get_rem_len_cont() {
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 6);
     let test_write = writer.insert_ref(2, &[0x82, 0x81]);
     let rm_len = writer.get_rem_len();
-    assert_ok!(test_write);
-    assert_err!(rm_len);
+    assert!(test_write.is_ok());
+    assert!(rm_len.is_err());
     writer.insert_ref(2, &[0x82, 0x01]);
     let rm_len_sec = writer.get_rem_len();
-    assert_ok!(rm_len_sec);
+    assert!(rm_len_sec.is_ok());
     assert_eq!(rm_len_sec.unwrap(), [0x81, 0x82, 0x01, 0x00]);
 }

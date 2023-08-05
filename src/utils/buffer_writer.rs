@@ -1,3 +1,4 @@
+use core::result::Result;
 use heapless::Vec;
 
 use crate::encoding::variable_byte_integer::{VariableByteInteger, VariableByteIntegerEncoder};

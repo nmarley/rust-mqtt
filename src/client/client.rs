@@ -1,3 +1,4 @@
+use embedded_io::blocking::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 
@@ -43,7 +44,7 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the connection to the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn connect_to_broker(&mut self) -> Result<(), ReasonCode> {
         self.raw.connect_to_broker()?;
 
         match self.raw.poll::<0>()? {
@@ -58,7 +59,7 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the disconnect from the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn disconnect(&mut self) -> Result<(), ReasonCode> {
         self.raw.disconnect()?;
         Ok(())
     }
@@ -165,7 +166,7 @@ where
     /// Method allows client receive a message. The work of this method strictly depends on the
     /// network implementation passed in the `ClientConfig`. It expects the PUBLISH packet
     /// from the broker.
-    pub fn receive_message<'b>(&'b mut self) -> Result<(&'b str, &'b [u8]), ReasonCode> {
+    pub fn receive_message(&mut self) -> Result<(&str, &[u8]), ReasonCode> {
         match self.raw.poll::<0>()? {
             Event::Message(topic, payload) => Ok((topic, payload)),
             Event::Disconnect(reason) => Err(reason),
@@ -177,7 +178,7 @@ where
     /// Method allows client send PING message to the broker specified in the `ClientConfig`.
     /// If there is expectation for long running connection. Method should be executed
     /// regularly by the timer that counts down the session expiry interval.
-    pub fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn send_ping(&mut self) -> Result<(), ReasonCode> {
         self.raw.send_ping()?;
 
         match self.raw.poll::<0>()? {
