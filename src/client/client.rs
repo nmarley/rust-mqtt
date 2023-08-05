@@ -1,28 +1,3 @@
-/*
- * MIT License
- *
- * Copyright (c) [2022] [Ondrej Babec <ond.babec@gmail.com>]
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-use embedded_io::asynch::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 
@@ -68,10 +43,10 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the connection to the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub async fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
-        self.raw.connect_to_broker().await?;
+    pub fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
+        self.raw.connect_to_broker()?;
 
-        match self.raw.poll::<0>().await? {
+        match self.raw.poll::<0>()? {
             Event::Connack => Ok(()),
             Event::Disconnect(reason) => Err(reason),
             // If an application message comes at this moment, it is lost.
@@ -83,8 +58,8 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the disconnect from the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub async fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
-        self.raw.disconnect().await?;
+    pub fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
+        self.raw.disconnect()?;
         Ok(())
     }
 
@@ -92,21 +67,18 @@ where
     /// message from the parameter `message` to the topic `topic_name` on the broker
     /// specified in the ClientConfig. If the send fails method returns Err with reason code
     /// received by broker.
-    pub async fn send_message<'b>(
+    pub fn send_message<'b>(
         &'b mut self,
         topic_name: &'b str,
         message: &'b [u8],
         qos: QualityOfService,
         retain: bool,
     ) -> Result<(), ReasonCode> {
-        let identifier = self
-            .raw
-            .send_message(topic_name, message, qos, retain)
-            .await?;
+        let identifier = self.raw.send_message(topic_name, message, qos, retain)?;
 
         // QoS1
         if qos == QoS1 {
-            match self.raw.poll::<0>().await? {
+            match self.raw.poll::<0>()? {
                 Event::Puback(ack_identifier) => {
                     if identifier == ack_identifier {
                         Ok(())
@@ -127,13 +99,13 @@ where
     /// `topic_names` on the broker specified in the `ClientConfig`. Generics `TOPICS`
     /// sets the value of the `topics_names` vector. MQTT protocol implementation
     /// is selected automatically.
-    pub async fn subscribe_to_topics<'b, const TOPICS: usize>(
+    pub fn subscribe_to_topics<'b, const TOPICS: usize>(
         &'b mut self,
         topic_names: &'b Vec<&'b str, TOPICS>,
     ) -> Result<(), ReasonCode> {
-        let identifier = self.raw.subscribe_to_topics(topic_names).await?;
+        let identifier = self.raw.subscribe_to_topics(topic_names)?;
 
-        match self.raw.poll::<TOPICS>().await? {
+        match self.raw.poll::<TOPICS>()? {
             Event::Suback(ack_identifier) => {
                 if identifier == ack_identifier {
                     Ok(())
@@ -150,13 +122,10 @@ where
     /// Method allows client unsubscribe from the topic specified in the parameter
     /// `topic_name` on the broker from the `ClientConfig`. MQTT protocol implementation
     /// is selected automatically.
-    pub async fn unsubscribe_from_topic<'b>(
-        &'b mut self,
-        topic_name: &'b str,
-    ) -> Result<(), ReasonCode> {
-        let identifier = self.raw.unsubscribe_from_topic(topic_name).await?;
+    pub fn unsubscribe_from_topic<'b>(&'b mut self, topic_name: &'b str) -> Result<(), ReasonCode> {
+        let identifier = self.raw.unsubscribe_from_topic(topic_name)?;
 
-        match self.raw.poll::<0>().await? {
+        match self.raw.poll::<0>()? {
             Event::Unsuback(ack_identifier) => {
                 if identifier == ack_identifier {
                     Ok(())
@@ -173,16 +142,13 @@ where
     /// Method allows client subscribe to multiple topics specified in the parameter
     /// `topic_name` on the broker specified in the `ClientConfig`. MQTT protocol implementation
     /// is selected automatically.
-    pub async fn subscribe_to_topic<'b>(
-        &'b mut self,
-        topic_name: &'b str,
-    ) -> Result<(), ReasonCode> {
+    pub fn subscribe_to_topic<'b>(&'b mut self, topic_name: &'b str) -> Result<(), ReasonCode> {
         let mut topic_names = Vec::<&'b str, 1>::new();
         topic_names.push(topic_name).unwrap();
 
-        let identifier = self.raw.subscribe_to_topics(&topic_names).await?;
+        let identifier = self.raw.subscribe_to_topics(&topic_names)?;
 
-        match self.raw.poll::<1>().await? {
+        match self.raw.poll::<1>()? {
             Event::Suback(ack_identifier) => {
                 if identifier == ack_identifier {
                     Ok(())
@@ -199,8 +165,8 @@ where
     /// Method allows client receive a message. The work of this method strictly depends on the
     /// network implementation passed in the `ClientConfig`. It expects the PUBLISH packet
     /// from the broker.
-    pub async fn receive_message<'b>(&'b mut self) -> Result<(&'b str, &'b [u8]), ReasonCode> {
-        match self.raw.poll::<0>().await? {
+    pub fn receive_message<'b>(&'b mut self) -> Result<(&'b str, &'b [u8]), ReasonCode> {
+        match self.raw.poll::<0>()? {
             Event::Message(topic, payload) => Ok((topic, payload)),
             Event::Disconnect(reason) => Err(reason),
             // If an application message comes at this moment, it is lost.
@@ -211,10 +177,10 @@ where
     /// Method allows client send PING message to the broker specified in the `ClientConfig`.
     /// If there is expectation for long running connection. Method should be executed
     /// regularly by the timer that counts down the session expiry interval.
-    pub async fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
-        self.raw.send_ping().await?;
+    pub fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
+        self.raw.send_ping()?;
 
-        match self.raw.poll::<0>().await? {
+        match self.raw.poll::<0>()? {
             Event::Pingresp => Ok(()),
             Event::Disconnect(reason) => Err(reason),
             // If an application message comes at this moment, it is lost.

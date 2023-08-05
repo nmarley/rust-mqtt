@@ -1,4 +1,3 @@
-use embedded_io::asynch::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 
@@ -71,7 +70,7 @@ where
         }
     }
 
-    async fn connect_to_broker_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    fn connect_to_broker_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -103,7 +102,7 @@ where
         }
         let conn = self.connection.as_mut().unwrap();
         trace!("Sending connect");
-        conn.send(&self.buffer[0..len.unwrap()]).await?;
+        conn.send(&self.buffer[0..len.unwrap()])?;
 
         Ok(())
     }
@@ -112,14 +111,14 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the connection to the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub async fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn connect_to_broker<'b>(&'b mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.connect_to_broker_v5().await,
+            MqttVersion::MQTTv5 => self.connect_to_broker_v5(),
         }
     }
 
-    async fn disconnect_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    fn disconnect_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -133,7 +132,7 @@ where
             return Err(ReasonCode::BuffError);
         }
 
-        if let Err(_e) = conn.send(&self.buffer[0..len.unwrap()]).await {
+        if let Err(_e) = conn.send(&self.buffer[0..len.unwrap()]) {
             warn!("Could not send DISCONNECT packet");
         }
 
@@ -146,14 +145,14 @@ where
     /// in the `ClientConfig`. Method selects proper implementation of the MQTT version based on the config.
     /// If the disconnect from the broker fails, method returns Err variable that contains
     /// Reason codes returned from the broker.
-    pub async fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn disconnect<'b>(&'b mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.disconnect_v5().await,
+            MqttVersion::MQTTv5 => self.disconnect_v5(),
         }
     }
 
-    async fn send_message_v5<'b>(
+    fn send_message_v5<'b>(
         &'b mut self,
         topic_name: &'b str,
         message: &'b [u8],
@@ -181,7 +180,7 @@ where
             return Err(ReasonCode::BuffError);
         }
         trace!("Sending message");
-        conn.send(&self.buffer[0..len.unwrap()]).await?;
+        conn.send(&self.buffer[0..len.unwrap()])?;
 
         Ok(identifier)
     }
@@ -189,7 +188,7 @@ where
     /// message from the parameter `message` to the topic `topic_name` on the broker
     /// specified in the ClientConfig. If the send fails method returns Err with reason code
     /// received by broker.
-    pub async fn send_message<'b>(
+    pub fn send_message<'b>(
         &'b mut self,
         topic_name: &'b str,
         message: &'b [u8],
@@ -198,11 +197,11 @@ where
     ) -> Result<u16, ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.send_message_v5(topic_name, message, qos, retain).await,
+            MqttVersion::MQTTv5 => self.send_message_v5(topic_name, message, qos, retain),
         }
     }
 
-    async fn subscribe_to_topics_v5<'b, const TOPICS: usize>(
+    fn subscribe_to_topics_v5<'b, const TOPICS: usize>(
         &'b mut self,
         topic_names: &'b Vec<&'b str, TOPICS>,
     ) -> Result<u16, ReasonCode> {
@@ -225,7 +224,7 @@ where
             return Err(ReasonCode::BuffError);
         }
 
-        conn.send(&self.buffer[0..len.unwrap()]).await?;
+        conn.send(&self.buffer[0..len.unwrap()])?;
 
         Ok(identifier)
     }
@@ -234,33 +233,30 @@ where
     /// `topic_names` on the broker specified in the `ClientConfig`. Generics `TOPICS`
     /// sets the value of the `topics_names` vector. MQTT protocol implementation
     /// is selected automatically.
-    pub async fn subscribe_to_topics<'b, const TOPICS: usize>(
+    pub fn subscribe_to_topics<'b, const TOPICS: usize>(
         &'b mut self,
         topic_names: &'b Vec<&'b str, TOPICS>,
     ) -> Result<u16, ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.subscribe_to_topics_v5(topic_names).await,
+            MqttVersion::MQTTv5 => self.subscribe_to_topics_v5(topic_names),
         }
     }
 
     /// Method allows client unsubscribe from the topic specified in the parameter
     /// `topic_name` on the broker from the `ClientConfig`. MQTT protocol implementation
     /// is selected automatically.
-    pub async fn unsubscribe_from_topic<'b>(
+    pub fn unsubscribe_from_topic<'b>(
         &'b mut self,
         topic_name: &'b str,
     ) -> Result<u16, ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.unsubscribe_from_topic_v5(topic_name).await,
+            MqttVersion::MQTTv5 => self.unsubscribe_from_topic_v5(topic_name),
         }
     }
 
-    async fn unsubscribe_from_topic_v5<'b>(
-        &'b mut self,
-        topic_name: &'b str,
-    ) -> Result<u16, ReasonCode> {
+    fn unsubscribe_from_topic_v5<'b>(&'b mut self, topic_name: &'b str) -> Result<u16, ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -278,12 +274,12 @@ where
             error!("[DECODE ERR]: {}", err);
             return Err(ReasonCode::BuffError);
         }
-        conn.send(&self.buffer[0..len.unwrap()]).await?;
+        conn.send(&self.buffer[0..len.unwrap()])?;
 
         Ok(identifier)
     }
 
-    async fn send_ping_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    fn send_ping_v5<'b>(&'b mut self) -> Result<(), ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -298,7 +294,7 @@ where
             return Err(ReasonCode::BuffError);
         }
 
-        conn.send(&self.buffer[0..len.unwrap()]).await?;
+        conn.send(&self.buffer[0..len.unwrap()])?;
 
         Ok(())
     }
@@ -306,14 +302,14 @@ where
     /// Method allows client send PING message to the broker specified in the `ClientConfig`.
     /// If there is expectation for long running connection. Method should be executed
     /// regularly by the timer that counts down the session expiry interval.
-    pub async fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
+    pub fn send_ping<'b>(&'b mut self) -> Result<(), ReasonCode> {
         match self.config.mqtt_version {
             MqttVersion::MQTTv3 => Err(ReasonCode::UnsupportedProtocolVersion),
-            MqttVersion::MQTTv5 => self.send_ping_v5().await,
+            MqttVersion::MQTTv5 => self.send_ping_v5(),
         }
     }
 
-    pub async fn poll<'b, const MAX_TOPICS: usize>(&'b mut self) -> Result<Event<'b>, ReasonCode> {
+    pub fn poll<'b, const MAX_TOPICS: usize>(&'b mut self) -> Result<Event<'b>, ReasonCode> {
         if self.connection.is_none() {
             return Err(ReasonCode::NetworkError);
         }
@@ -322,7 +318,7 @@ where
 
         trace!("Waiting for a packet");
 
-        let read = { receive_packet(self.buffer, self.buffer_len, self.recv_buffer, conn).await? };
+        let read = { receive_packet(self.buffer, self.buffer_len, self.recv_buffer, conn)? };
 
         let buf_reader = BuffReader::new(self.buffer, read);
 
@@ -447,7 +443,7 @@ where
                             error!("[DECODE ERR]: {}", err);
                             return Err(ReasonCode::BuffError);
                         }
-                        conn.send(&self.recv_buffer[0..len.unwrap()]).await?;
+                        conn.send(&self.recv_buffer[0..len.unwrap()])?;
                     }
                 }
 
@@ -473,7 +469,7 @@ where
 }
 
 #[cfg(not(feature = "tls"))]
-async fn receive_packet<'c, T: Read + Write>(
+fn receive_packet<'c, T: Read + Write>(
     buffer: &mut [u8],
     buffer_len: usize,
     recv_buffer: &mut [u8],
@@ -490,9 +486,7 @@ async fn receive_packet<'c, T: Read + Write>(
     trace!("Reading lenght of packet");
     loop {
         trace!("    Reading in loop!");
-        let len: usize = conn
-            .receive(&mut recv_buffer[writer.position..(writer.position + 1)])
-            .await?;
+        let len: usize = conn.receive(&mut recv_buffer[writer.position..(writer.position + 1)])?;
         trace!("    Received data!");
         if len == 0 {
             trace!("Zero byte len packet received, dropping connection.");
@@ -530,9 +524,8 @@ async fn receive_packet<'c, T: Read + Write>(
             trace!("Received packet with len: {}", (target_len + rem_len_len));
             return Ok(target_len + rem_len_len);
         }
-        let len: usize = conn
-            .receive(&mut recv_buffer[writer.position..writer.position + (target_len - i)])
-            .await?;
+        let len: usize =
+            conn.receive(&mut recv_buffer[writer.position..writer.position + (target_len - i)])?;
         i += len;
         if let Err(_e) =
             writer.insert_ref(len, &recv_buffer[writer.position..(writer.position + i)])
@@ -544,7 +537,7 @@ async fn receive_packet<'c, T: Read + Write>(
 }
 
 #[cfg(feature = "tls")]
-async fn receive_packet<'c, T: Read + Write>(
+fn receive_packet<'c, T: Read + Write>(
     buffer: &mut [u8],
     buffer_len: usize,
     recv_buffer: &mut [u8],
@@ -552,7 +545,7 @@ async fn receive_packet<'c, T: Read + Write>(
 ) -> Result<usize, ReasonCode> {
     trace!("Reading packet");
     let mut writer = BuffWriter::new(buffer, buffer_len);
-    let len = conn.receive(recv_buffer).await?;
+    let len = conn.receive(recv_buffer)?;
     if let Err(_e) = writer.insert_ref(len, &recv_buffer[writer.position..(writer.position + len)])
     {
         error!("Error occurred during write to buffer!");
