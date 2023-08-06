@@ -36,7 +36,7 @@ pub enum Event<'a> {
     Disconnect(ReasonCode),
 }
 
-pub struct RawMqttClient<'a, T, const MAX_PROPERTIES: usize, R: RngCore>
+pub struct RawClient<'a, T, const MAX_PROPERTIES: usize, R: RngCore>
 where
     T: Read + Write,
 {
@@ -48,7 +48,7 @@ where
     config: ClientConfig<'a, MAX_PROPERTIES, R>,
 }
 
-impl<'a, T, const MAX_PROPERTIES: usize, R> RawMqttClient<'a, T, MAX_PROPERTIES, R>
+impl<'a, T, const MAX_PROPERTIES: usize, R> RawClient<'a, T, MAX_PROPERTIES, R>
 where
     T: Read + Write,
     R: RngCore,

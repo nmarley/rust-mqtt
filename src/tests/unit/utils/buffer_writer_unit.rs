@@ -316,7 +316,8 @@ fn buffer_write_filters() {
     filters.push(filter1);
     filters.push(filter2);
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 15);
-    let test_write = writer.write_topic_filters_ref(true, 2, &filters);
+    // let test_write = writer.write_topic_filters_ref(true, 2, &filters);
+    let test_write = writer.write_topic_filters_ref(true, &filters);
     assert!(test_write.is_ok());
     assert_eq!(writer.position, 15);
     assert_eq!(
@@ -353,7 +354,8 @@ fn buffer_write_filters_oob() {
     filters.push(filter1);
     filters.push(filter2);
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 5);
-    let test_write = writer.write_topic_filters_ref(true, 2, &filters);
+    // let test_write = writer.write_topic_filters_ref(true, 2, &filters);
+    let test_write = writer.write_topic_filters_ref(true, &filters);
     assert!(test_write.is_err());
     assert_eq!(test_write.unwrap_err(), BufferError::InsufficientBufferSize)
 }
@@ -458,8 +460,8 @@ fn buffer_get_rem_len_zero() {
 
 #[test]
 fn buffer_get_rem_len_cont() {
-    static BUFFER: [u8; 6] = [0x82, 0x00, 0x83, 0x85, 0x04, 0x34];
-    static REF: VariableByteInteger = [0x00, 0x00, 0x00, 0x00];
+    // static BUFFER: [u8; 6] = [0x82, 0x00, 0x83, 0x85, 0x04, 0x34];
+    // static REF: VariableByteInteger = [0x00, 0x00, 0x00, 0x00];
     let mut res_buffer: [u8; 6] = [0; 6];
 
     let mut writer: BuffWriter = BuffWriter::new(&mut res_buffer, 6);

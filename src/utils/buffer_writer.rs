@@ -160,7 +160,7 @@ impl<'a> BuffWriter<'a> {
     pub fn write_topic_filters_ref<const MAX: usize>(
         &mut self,
         sub: bool,
-        len: usize,
+        // len: usize,
         filters: &Vec<TopicFilter<'a>, MAX>,
     ) -> Result<(), BufferError> {
         for filter in filters {

@@ -10,7 +10,8 @@ pub enum MqttVersion {
     MQTTv3,
     MQTTv5,
 }
-/// Client config is main configuration for the `MQTTClient` structure.
+
+/// Client config is main configuration for the `Client` structure.
 /// All of the properties are optional if they are not set they are not gonna
 /// be used. Configuration contains also MQTTv5 properties. Generic constant
 /// `MAX_PROPERTIES` sets the length for the properties Vec. User can insert
@@ -101,7 +102,7 @@ impl<'a, const MAX_PROPERTIES: usize, T: RngCore> ClientConfig<'a, MAX_PROPERTIE
     /// Method adds the property to the properties Vec if there is still space. Otherwise do nothing.
     pub fn add_property(&mut self, prop: Property<'a>) {
         if self.properties.len() < MAX_PROPERTIES {
-            self.properties.push(prop);
+            let _ = self.properties.push(prop);
         }
     }
 
@@ -109,7 +110,7 @@ impl<'a, const MAX_PROPERTIES: usize, T: RngCore> ClientConfig<'a, MAX_PROPERTIE
     pub fn add_max_packet_size_as_prop(&mut self) -> u32 {
         if self.properties.len() < MAX_PROPERTIES {
             let prop = Property::MaximumPacketSize(self.max_packet_size);
-            self.properties.push(prop);
+            let _ = self.properties.push(prop);
             return 5;
         }
         0

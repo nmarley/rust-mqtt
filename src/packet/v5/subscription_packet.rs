@@ -74,7 +74,7 @@ impl<'a, const MAX_FILTERS: usize, const MAX_PROPERTIES: usize> Packet<'a>
         buff_writer.write_properties::<MAX_PROPERTIES>(&self.properties)?;
         buff_writer.write_topic_filters_ref(
             true,
-            self.topic_filter_len as usize,
+            // self.topic_filter_len as usize,
             &self.topic_filters,
         )?;
         Ok(buff_writer.position)

@@ -2,20 +2,20 @@ use embedded_io::blocking::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 
-use crate::client::client_config::ClientConfig;
 use crate::packet::v5::publish_packet::QualityOfService::{self, QoS1};
 use crate::packet::v5::reason_codes::ReasonCode;
 
-use super::raw_client::{Event, RawMqttClient};
+use super::client_config::ClientConfig;
+use super::raw_client::{Event, RawClient};
 
-pub struct MqttClient<'a, T, const MAX_PROPERTIES: usize, R: RngCore>
+pub struct Client<'a, T, const MAX_PROPERTIES: usize, R: RngCore>
 where
     T: Read + Write,
 {
-    raw: RawMqttClient<'a, T, MAX_PROPERTIES, R>,
+    raw: RawClient<'a, T, MAX_PROPERTIES, R>,
 }
 
-impl<'a, T, const MAX_PROPERTIES: usize, R> MqttClient<'a, T, MAX_PROPERTIES, R>
+impl<'a, T, const MAX_PROPERTIES: usize, R> Client<'a, T, MAX_PROPERTIES, R>
 where
     T: Read + Write,
     R: RngCore,
@@ -29,7 +29,7 @@ where
         config: ClientConfig<'a, MAX_PROPERTIES, R>,
     ) -> Self {
         Self {
-            raw: RawMqttClient::new(
+            raw: RawClient::new(
                 network_driver,
                 buffer,
                 buffer_len,

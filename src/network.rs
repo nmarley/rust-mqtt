@@ -1,5 +1,6 @@
-use crate::packet::v5::reason_codes::ReasonCode;
 use embedded_io::blocking::{Read, Write};
+
+use crate::packet::v5::reason_codes::ReasonCode;
 
 pub struct NetworkConnection<T>
 where

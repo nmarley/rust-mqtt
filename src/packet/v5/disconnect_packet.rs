@@ -23,9 +23,9 @@ pub struct DisconnectPacket<'a, const MAX_PROPERTIES: usize> {
 }
 
 impl<'a, const MAX_PROPERTIES: usize> DisconnectPacket<'a, MAX_PROPERTIES> {
-    fn add_reason(&mut self, reason: u8) {
-        self.disconnect_reason = reason;
-    }
+    // fn add_reason(&mut self, reason: u8) {
+    //     self.disconnect_reason = reason;
+    // }
 }
 
 impl<'a, const MAX_PROPERTIES: usize> Packet<'a> for DisconnectPacket<'a, MAX_PROPERTIES> {
