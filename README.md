@@ -2,6 +2,8 @@
 
 Rust-mqtt is native MQTT client for `no_std` environments.
 
+This is a `no_std` (only) fork based on the original [upstream Rust-MQTT client by Ondrej Babec](https://github.com/obabec/rust-mqtt/). This fork does not require nightly Rust, and doesn't at this time support async runtimes.
+
 Currently only supports MQTT v5.
 
 ## Constraints
@@ -13,7 +15,13 @@ Client supports following:
 - Auth packet not supported
 - Packet size is not limited, it is totally up to user (packet size and buffer sizes have to align)
 
-## Acknowledgment
+### License
 
-This project could not be in state in which currently is without Ulf Lilleengen
-and rest of the community from [Drogue IoT](https://github.com/drogue-iot).
+This project is licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+   https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+   https://opensource.org/licenses/MIT)
+
+at your option.
