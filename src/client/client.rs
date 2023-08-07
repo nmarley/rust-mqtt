@@ -1,4 +1,4 @@
-use embedded_io::blocking::{Read, Write};
+use embedded_io::{Read, Write};
 use heapless::Vec;
 use rand_core::RngCore;
 

@@ -1,4 +1,4 @@
-use embedded_io::blocking::{Read, Write};
+use embedded_io::{Read, Write};
 
 use crate::packet::v5::reason_codes::ReasonCode;
 
